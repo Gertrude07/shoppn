@@ -1,0 +1,11 @@
+# Real database credentials 
+# Copy core/db_cred.example.php to core/db_cred.php and fill in your own values.
+core/db_cred.php
+
+# OS and editor junk
+.DS_Store
+Thumbs.db
+*.swp
+
+# Local logs, if you add any
+*.log
