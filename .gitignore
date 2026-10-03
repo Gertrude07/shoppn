@@ -1,0 +1,10 @@
+# Local database credentials
+core/db_cred.php
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+
+# Local logs
+*.log
