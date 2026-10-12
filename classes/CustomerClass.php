@@ -52,4 +52,47 @@ class CustomerClass extends Database {
 
         return false;
     }
+
+    // Account — fetch one customer row by id
+    public function getCustomerById($id) {
+        $stmt = $this->conn->prepare('SELECT * FROM customer WHERE customer_id = ?');
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        return $row ?: false;
+    }
+
+    // Account — is this email used by a different customer?
+    public function emailTakenByOther($email, $id) {
+        $stmt = $this->conn->prepare('SELECT customer_id FROM customer WHERE customer_email = ? AND customer_id <> ?');
+        $stmt->bind_param('si', $email, $id);
+        $stmt->execute();
+        $taken = $stmt->get_result()->num_rows > 0;
+        $stmt->close();
+
+        return $taken;
+    }
+
+    // Account — update the customer's name and email
+    public function updateProfile($id, $name, $email) {
+        $stmt = $this->conn->prepare('UPDATE customer SET customer_name = ?, customer_email = ? WHERE customer_id = ?');
+        $stmt->bind_param('ssi', $name, $email, $id);
+        $success = $stmt->execute();
+        $stmt->close();
+
+        return $success;
+    }
+
+    // Account — store a new bcrypt-hashed password
+    public function updatePassword($id, $newPass) {
+        $hash = password_hash($newPass, PASSWORD_BCRYPT);
+        $stmt = $this->conn->prepare('UPDATE customer SET customer_pass = ? WHERE customer_id = ?');
+        $stmt->bind_param('si', $hash, $id);
+        $success = $stmt->execute();
+        $stmt->close();
+
+        return $success;
+    }
 }

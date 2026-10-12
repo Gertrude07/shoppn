@@ -27,6 +27,9 @@
                     <li><a href="<?= BASE_URL ?>/views/shop.php">Shop</a></li>
                 <?php endif; ?>
                 <li><a href="<?= BASE_URL ?>/views/account/my_account.php">My Account</a></li>
+                <?php if (!is_admin()): ?>
+                    <li><a href="<?= BASE_URL ?>/views/cart.php">Cart</a></li>
+                <?php endif; ?>
                 <?php if (is_admin()): ?>
                     <li><a href="<?= BASE_URL ?>/views/admin/brand.php">Brands</a></li>
                     <li><a href="<?= BASE_URL ?>/views/admin/category.php">Categories</a></li>

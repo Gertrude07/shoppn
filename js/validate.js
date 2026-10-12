@@ -125,4 +125,59 @@ document.addEventListener('DOMContentLoaded', function () {
             setLoading(submitButton);
         });
     }
+
+    var editAccountForm = document.getElementById('edit-account-form');
+    if (editAccountForm) {
+        editAccountForm.addEventListener('submit', function (e) {
+            clearErrors(editAccountForm);
+
+            var valid = true;
+
+            if (document.getElementById('name').value.trim().length < 2) {
+                showError('name-error', 'Name must be at least 2 characters.');
+                valid = false;
+            }
+            if (!emailRegex.test(document.getElementById('email').value.trim())) {
+                showError('email-error', 'Enter a valid email address.');
+                valid = false;
+            }
+
+            if (!valid) {
+                e.preventDefault();
+            } else {
+                setLoading(document.getElementById('edit-account-submit'));
+            }
+        });
+    }
+
+    var changePassForm = document.getElementById('change-pass-form');
+    if (changePassForm) {
+        changePassForm.addEventListener('submit', function (e) {
+            clearErrors(changePassForm);
+            var valid = true;
+
+            var current = document.getElementById('current-pass').value;
+            var newPass = document.getElementById('new-pass').value;
+            var confirmPass = document.getElementById('confirm-pass').value;
+
+            if (current.length === 0) {
+                showError('current-pass-error', 'Enter your current password.');
+                valid = false;
+            }
+            if (!passRegex.test(newPass)) {
+                showError('new-pass-error', 'Password must be 8-64 characters with lowercase, uppercase, a digit, and a special character.');
+                valid = false;
+            }
+            if (newPass !== confirmPass) {
+                showError('confirm-pass-error', 'Passwords do not match.');
+                valid = false;
+            }
+
+            if (!valid) {
+                e.preventDefault();
+            } else {
+                setLoading(document.getElementById('change-pass-submit'));
+            }
+        });
+    }
 });

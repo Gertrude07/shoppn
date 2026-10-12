@@ -29,11 +29,9 @@ if (!$file || $file['error'] !== UPLOAD_ERR_OK || $file['size'] > $maxFileSize) 
     redirect(BASE_URL . '/views/admin/product.php');
 }
 
-$finfo = finfo_open(FILEINFO_MIME_TYPE);
-$mimeType = $finfo ? finfo_file($finfo, $file['tmp_name']) : false;
-if ($finfo) {
-    finfo_close($finfo);
-}
+$mimeType = function_exists('get_uploaded_mime_type')
+    ? get_uploaded_mime_type($file['tmp_name'])
+    : (function_exists('mime_content_type') ? mime_content_type($file['tmp_name']) : false);
 
 if (!in_array($mimeType, $allowedTypes, true)) {
     $_SESSION['error'] = 'Only JPEG, PNG, GIF, and WebP images are allowed.';
@@ -55,7 +53,7 @@ if (!is_writable($uploadDir)) {
 }
 
 $originalName = basename($file['name']);
-$safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
+$safeName = substr(preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName), -50); // keep it short so it fits the DB column
 $filename = uniqid('', true) . '_' . $safeName;
 $uploadPath = $uploadDir . $filename;
 
@@ -69,10 +67,18 @@ if ($uploadDir !== $uploadPaths['display']) {
 }
 
 $controller = new ProductController();
-if ($controller->addProduct($cat, $brand, $title, (float) $price, $currency, $desc, $filename, $keywords)) {
+try {
+    $added = $controller->addProduct($cat, $brand, $title, (float) $price, $currency, $desc, $filename, $keywords);
+} catch (Throwable $e) {
+    error_log('add_product_action: ' . $e->getMessage());
+    $added = false;
+}
+if ($added) {
     $_SESSION['success'] = 'Product added.';
 } else {
-    unlink($uploadPath);
+    if (is_file($uploadPath)) {
+        unlink($uploadPath);
+    }
     $_SESSION['error'] = 'Unable to add product.';
 }
 

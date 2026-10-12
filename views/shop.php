@@ -68,6 +68,11 @@ $shopBrands = $shopController->getAllBrands();
                                 <h2><?= htmlspecialchars($product['product_title']) ?></h2>
                                 <p class="product-card-description"><?= htmlspecialchars($product['product_desc'] ?? '') ?></p>
                                 <strong class="product-card-price"><?= format_price($product['product_price'], $product['product_currency'] ?? 'USD') ?></strong>
+                                <form method="POST" action="<?= BASE_URL ?>/actions/add_to_cart_action.php" class="product-cart-form">
+                                    <input type="hidden" name="product_id" value="<?= (int) $product['product_id'] ?>">
+                                    <input type="hidden" name="qty" value="1">
+                                    <button type="submit">Add to cart</button>
+                                </form>
                             </div>
                         </article>
                     <?php endforeach; ?>

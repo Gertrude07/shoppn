@@ -45,4 +45,32 @@ class CustomerController {
 
         return ['success' => true, 'customer' => $row];
     }
+
+    // Account — change the customer's name and email
+    public function updateProfile($id, $name, $email) {
+        if ($this->model->emailTakenByOther($email, $id)) {
+            return ['success' => false, 'error' => 'That email is already used by another account.'];
+        }
+
+        if (!$this->model->updateProfile($id, $name, $email)) {
+            return ['success' => false, 'error' => 'Unable to update your details. Please try again.'];
+        }
+
+        return ['success' => true];
+    }
+
+    // Account — change password after checking the current one
+    public function changePassword($id, $currentPass, $newPass) {
+        $row = $this->model->getCustomerById($id);
+
+        if (!$row || !password_verify($currentPass, $row['customer_pass'])) {
+            return ['success' => false, 'error' => 'Your current password is incorrect.'];
+        }
+
+        if (!$this->model->updatePassword($id, $newPass)) {
+            return ['success' => false, 'error' => 'Unable to change your password. Please try again.'];
+        }
+
+        return ['success' => true];
+    }
 }

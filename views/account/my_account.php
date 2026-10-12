@@ -17,7 +17,10 @@ require __DIR__ . '/../layout/header.php';
     <p><strong>Email:</strong> <?php echo htmlspecialchars($_SESSION['customer_email'] ?? ''); ?></p>
     <p><strong>Role:</strong> <?php echo (isset($_SESSION['user_role']) && (int) $_SESSION['user_role'] === 1) ? 'Admin' : 'Customer'; ?></p>
 
-    <p class="account-note">Edit account, change password, and delete account are built in a later task.</p>
+    <div class="account-links">
+        <a class="button secondary" href="<?= BASE_URL ?>/views/account/edit_account.php">Edit Profile</a>
+        <a class="button secondary" href="<?= BASE_URL ?>/views/account/change_pass.php">Change Password</a>
+    </div>
 </div>
 
 <?php require __DIR__ . '/../layout/sidebar.php'; ?>

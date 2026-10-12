@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../core/core.php';
 require_once __DIR__ . '/../controllers/ProductController.php';
 $homeProducts = is_logged_in() ? (new ProductController())->getAllProducts() : [];
 ?>

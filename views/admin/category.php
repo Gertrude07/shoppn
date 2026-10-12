@@ -48,7 +48,13 @@ $formAction = $editingCategory ? BASE_URL . '/actions/update_category_action.php
                 <?php foreach ($categories as $category): ?>
                     <tr>
                         <td><?= htmlspecialchars($category['cat_name']) ?></td>
-                        <td><a href="<?= BASE_URL ?>/views/admin/category.php?edit_id=<?= (int) $category['cat_id'] ?>">Edit</a></td>
+                        <td class="table-actions">
+                            <a href="<?= BASE_URL ?>/views/admin/category.php?edit_id=<?= (int) $category['cat_id'] ?>">Edit</a>
+                            <form method="POST" action="<?= BASE_URL ?>/actions/delete_category_action.php" class="inline-form" onsubmit="return confirm('Delete this category? This cannot be undone.');">
+                                <input type="hidden" name="cat_id" value="<?= (int) $category['cat_id'] ?>">
+                                <button type="submit" class="danger-button">Delete</button>
+                            </form>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

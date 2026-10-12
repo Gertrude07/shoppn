@@ -35,11 +35,9 @@ if ($file && $file['error'] !== UPLOAD_ERR_NO_FILE) {
         redirect(BASE_URL . '/views/admin/product.php?edit_id=' . $id);
     }
 
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mimeType = $finfo ? finfo_file($finfo, $file['tmp_name']) : false;
-    if ($finfo) {
-        finfo_close($finfo);
-    }
+    $mimeType = function_exists('get_uploaded_mime_type')
+        ? get_uploaded_mime_type($file['tmp_name'])
+        : (function_exists('mime_content_type') ? mime_content_type($file['tmp_name']) : false);
 
     if (!in_array($mimeType, $allowedTypes, true)) {
         $_SESSION['error'] = 'Only JPEG, PNG, GIF, and WebP images are allowed.';
@@ -61,7 +59,7 @@ if ($file && $file['error'] !== UPLOAD_ERR_NO_FILE) {
     }
 
     $originalName = basename($file['name']);
-    $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
+    $safeName = substr(preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName), -50); // keep it short so it fits the DB column
     $imageFilename = uniqid('', true) . '_' . $safeName;
     $newUploadPath = $uploadDir . $imageFilename;
 
@@ -76,7 +74,13 @@ if ($file && $file['error'] !== UPLOAD_ERR_NO_FILE) {
 }
 
 $controller = new ProductController();
-if ($controller->updateProduct($id, $cat, $brand, $title, (float) $price, $currency, $desc, $imageFilename, $keywords)) {
+try {
+    $updated = $controller->updateProduct($id, $cat, $brand, $title, (float) $price, $currency, $desc, $imageFilename, $keywords);
+} catch (Throwable $e) {
+    error_log('update_product_action: ' . $e->getMessage());
+    $updated = false;
+}
+if ($updated) {
     $_SESSION['success'] = 'Product updated.';
     if ($newUploadPath && $currentImage !== $imageFilename) {
         $oldPath = __DIR__ . '/../images/products/' . $currentImage;

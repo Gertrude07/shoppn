@@ -11,6 +11,10 @@ $dashboardProducts = $dashboardController->getAllProducts();
 <?php require __DIR__ . '/../layout/header.php'; ?>
 
 <section class="admin-dashboard">
+    <?php if (!empty($_SESSION['error'])): ?>
+        <div class="alert alert-error"><?php echo htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?></div>
+    <?php endif; ?>
+
     <div class="admin-dashboard-hero">
         <div>
             <p class="eyebrow">Admin area</p>

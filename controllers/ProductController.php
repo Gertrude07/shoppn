@@ -55,4 +55,20 @@ class ProductController {
     public function getAllProducts() {
         return $this->model->getAllProducts();
     }
+
+    public function searchProducts($query) {
+        return $this->model->searchProducts($query);
+    }
+
+    public function deleteBrand($id) {
+        return $this->model->deleteBrand($id);
+    }
+
+    public function deleteCategory($id) {
+        return $this->model->deleteCategory($id);
+    }
+
+    public function deleteProduct($id) {
+        return $this->model->deleteProduct($id);
+    }
 }

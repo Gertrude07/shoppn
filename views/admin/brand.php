@@ -48,7 +48,13 @@ $formAction = $editingBrand ? BASE_URL . '/actions/update_brand_action.php' : BA
                 <?php foreach ($brands as $brand): ?>
                     <tr>
                         <td><?= htmlspecialchars($brand['brand_name']) ?></td>
-                        <td><a href="<?= BASE_URL ?>/views/admin/brand.php?edit_id=<?= (int) $brand['brand_id'] ?>">Edit</a></td>
+                        <td class="table-actions">
+                            <a href="<?= BASE_URL ?>/views/admin/brand.php?edit_id=<?= (int) $brand['brand_id'] ?>">Edit</a>
+                            <form method="POST" action="<?= BASE_URL ?>/actions/delete_brand_action.php" class="inline-form" onsubmit="return confirm('Delete this brand? This cannot be undone.');">
+                                <input type="hidden" name="brand_id" value="<?= (int) $brand['brand_id'] ?>">
+                                <button type="submit" class="danger-button">Delete</button>
+                            </form>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

@@ -1,5 +1,4 @@
-CREATE DATABASE IF NOT EXISTS `shoppn` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `shoppn`;
+-- Import this file into the target database selected in phpMyAdmin.
 
 DROP TABLE IF EXISTS `cart`;
 DROP TABLE IF EXISTS `products`;

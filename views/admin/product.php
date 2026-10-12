@@ -117,7 +117,13 @@ $formAction = $editingProduct ? BASE_URL . '/actions/update_product_action.php' 
                         <td><?= htmlspecialchars($product['cat_name']) ?></td>
                         <td><?= htmlspecialchars($product['brand_name']) ?></td>
                         <td><?= htmlspecialchars($product['product_currency'] ?? 'USD') ?> <?= number_format((float) $product['product_price'], 2) ?></td>
-                        <td><a href="<?= BASE_URL ?>/views/admin/product.php?edit_id=<?= (int) $product['product_id'] ?>">Edit</a></td>
+                        <td class="table-actions">
+                            <a href="<?= BASE_URL ?>/views/admin/product.php?edit_id=<?= (int) $product['product_id'] ?>">Edit</a>
+                            <form method="POST" action="<?= BASE_URL ?>/actions/delete_product_action.php" class="inline-form" onsubmit="return confirm('Delete this product? This cannot be undone.');">
+                                <input type="hidden" name="product_id" value="<?= (int) $product['product_id'] ?>">
+                                <button type="submit" class="danger-button">Delete</button>
+                            </form>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

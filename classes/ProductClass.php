@@ -2,12 +2,9 @@
 require_once __DIR__ . '/../core/db_class.php';
 
 class ProductClass extends Database {
-    private function ensureProductCurrencyColumn() {
+    private function hasProductCurrencyColumn() {
         $result = $this->conn->query("SHOW COLUMNS FROM products LIKE 'product_currency'");
-
-        if ($result && $result->num_rows === 0) {
-            $this->conn->query("ALTER TABLE products ADD COLUMN product_currency VARCHAR(10) NOT NULL DEFAULT 'USD' AFTER product_price");
-        }
+        return $result && $result->num_rows > 0;
     }
 
     public function addBrand($name) {
@@ -77,13 +74,22 @@ class ProductClass extends Database {
     }
 
     public function addProduct($cat, $brand, $title, $price, $currency, $desc, $imageFilename, $keywords) {
-        $this->ensureProductCurrencyColumn();
-
-        $stmt = $this->conn->prepare(
-            'INSERT INTO products (product_cat, product_brand, product_title, product_price, product_currency, product_desc, product_image, product_keywords)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-        );
-        $stmt->bind_param('iisdssss', $cat, $brand, $title, $price, $currency, $desc, $imageFilename, $keywords);
+        if ($this->hasProductCurrencyColumn()) {
+            $stmt = $this->conn->prepare(
+                'INSERT INTO products (product_cat, product_brand, product_title, product_price, product_currency, product_desc, product_image, product_keywords)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+            );
+            $stmt->bind_param('iisdssss', $cat, $brand, $title, $price, $currency, $desc, $imageFilename, $keywords);
+        } else {
+            $stmt = $this->conn->prepare(
+                'INSERT INTO products (product_cat, product_brand, product_title, product_price, product_desc, product_image, product_keywords)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)'
+            );
+            $stmt->bind_param('iisdsss', $cat, $brand, $title, $price, $desc, $imageFilename, $keywords);
+        }
+        if (!$stmt) {
+            return false;
+        }
         $success = $stmt->execute();
         $stmt->close();
 
@@ -91,14 +97,24 @@ class ProductClass extends Database {
     }
 
     public function updateProduct($id, $cat, $brand, $title, $price, $currency, $desc, $imageFilename, $keywords) {
-        $this->ensureProductCurrencyColumn();
-
-        $stmt = $this->conn->prepare(
-            'UPDATE products
-               SET product_cat = ?, product_brand = ?, product_title = ?, product_price = ?, product_currency = ?, product_desc = ?, product_image = ?, product_keywords = ?
-             WHERE product_id = ?'
-        );
-        $stmt->bind_param('iisdssssi', $cat, $brand, $title, $price, $currency, $desc, $imageFilename, $keywords, $id);
+        if ($this->hasProductCurrencyColumn()) {
+            $stmt = $this->conn->prepare(
+                'UPDATE products
+                   SET product_cat = ?, product_brand = ?, product_title = ?, product_price = ?, product_currency = ?, product_desc = ?, product_image = ?, product_keywords = ?
+                 WHERE product_id = ?'
+            );
+            $stmt->bind_param('iisdssssi', $cat, $brand, $title, $price, $currency, $desc, $imageFilename, $keywords, $id);
+        } else {
+            $stmt = $this->conn->prepare(
+                'UPDATE products
+                   SET product_cat = ?, product_brand = ?, product_title = ?, product_price = ?, product_desc = ?, product_image = ?, product_keywords = ?
+                 WHERE product_id = ?'
+            );
+            $stmt->bind_param('iisdsssi', $cat, $brand, $title, $price, $desc, $imageFilename, $keywords, $id);
+        }
+        if (!$stmt) {
+            return false;
+        }
         $success = $stmt->execute();
         $stmt->close();
 
@@ -106,8 +122,6 @@ class ProductClass extends Database {
     }
 
     public function getProductById($id) {
-        $this->ensureProductCurrencyColumn();
-
         $stmt = $this->conn->prepare(
               'SELECT p.*, p.product_cat AS cat_id, p.product_brand AS brand_id, c.cat_name, b.brand_name
              FROM products p
@@ -124,8 +138,6 @@ class ProductClass extends Database {
     }
 
     public function getAllProducts() {
-        $this->ensureProductCurrencyColumn();
-
         $result = $this->conn->query(
               'SELECT p.*, p.product_cat AS cat_id, p.product_brand AS brand_id, c.cat_name, b.brand_name
              FROM products p
@@ -134,5 +146,55 @@ class ProductClass extends Database {
              ORDER BY p.product_title ASC'
         );
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    }
+
+    public function searchProducts($query) {
+        $searchTerm = '%' . trim($query) . '%';
+        $stmt = $this->conn->prepare(
+            'SELECT p.*, c.cat_name, b.brand_name
+             FROM products p
+             INNER JOIN categories c ON p.product_cat = c.cat_id
+             INNER JOIN brands b ON p.product_brand = b.brand_id
+             WHERE p.product_title LIKE ?
+                OR p.product_desc LIKE ?
+                OR p.product_keywords LIKE ?
+                OR c.cat_name LIKE ?
+                OR b.brand_name LIKE ?
+             ORDER BY p.product_title ASC'
+        );
+        $stmt->bind_param('sssss', $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+        $stmt->close();
+
+        return $products;
+    }
+
+    public function deleteBrand($id) {
+        $stmt = $this->conn->prepare('DELETE FROM brands WHERE brand_id = ?');
+        $stmt->bind_param('i', $id);
+        $success = $stmt->execute();
+        $stmt->close();
+
+        return $success;
+    }
+
+    public function deleteCategory($id) {
+        $stmt = $this->conn->prepare('DELETE FROM categories WHERE cat_id = ?');
+        $stmt->bind_param('i', $id);
+        $success = $stmt->execute();
+        $stmt->close();
+
+        return $success;
+    }
+
+    public function deleteProduct($id) {
+        $stmt = $this->conn->prepare('DELETE FROM products WHERE product_id = ?');
+        $stmt->bind_param('i', $id);
+        $success = $stmt->execute();
+        $stmt->close();
+
+        return $success;
     }
 }
